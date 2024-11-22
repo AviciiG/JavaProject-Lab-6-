@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Filter Tasks</title>
+</head>
+<body>
+<h1>Filter by Category</h1>
+
+<form action="/tasks/filter" method="get">
+    <input type="text" name="categoryName" th:value="${categoryName}" placeholder="Filter by category">
+    <button type="submit">Filter</button>
+</form>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Category</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="task : ${tasks}">
+        <td th:text="${task.id}"></td>
+        <td th:text="${task.title}"></td>
+        <td th:text="${task.category.name}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<div>
+    <ul>
+        <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+            <a th:href="@{|/tasks/filter?categoryName=${categoryName}&page=${i}|}" th:text="${i + 1}"></a>
+        </li>
+    </ul>
+</div>
+</body>
+</html>

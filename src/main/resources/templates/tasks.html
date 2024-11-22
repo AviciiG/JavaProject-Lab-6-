@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Task Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            text-decoration: none;
+            color: white;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .btn-add {
+            background-color: #28a745;
+        }
+
+        .btn-add:hover {
+            background-color: #218838;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            padding: 0;
+        }
+
+        .pagination li {
+            margin: 0 5px;
+        }
+
+        .pagination a {
+            text-decoration: none;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            color: #007bff;
+            border-radius: 4px;
+        }
+
+        .pagination a.active {
+            background-color: #007bff;
+            color: white;
+            pointer-events: none;
+        }
+
+        .filter-form input, .filter-form select {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Task Management</h1>
+
+    <!-- Фильтры -->
+    <form class="filter-form" method="get" th:action="@{/web/tasks}">
+        <input type="text" name="title" placeholder="Search by title" th:value="${param.title}">
+        <select name="category">
+            <option value="">All Categories</option>
+            <option th:each="category : ${categories}" th:value="${category.name}" th:text="${category.name}"></option>
+        </select>
+        <button type="submit" class="btn">Filter</button>
+    </form>
+
+    <!-- Таблица задач -->
+    <table>
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Due Date</th>
+            <th>Category</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="task : ${tasks}">
+            <td th:text="${task.title}"></td>
+            <td th:text="${task.description}"></td>
+            <td th:text="${task.dueDate}"></td>
+            <td th:text="${task.category.name}"></td>
+            <td>
+                <form th:action="@{/web/tasks/delete/{id}(id=${task.id})}" method="post">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Пагинация -->
+    <ul class="pagination">
+        <li th:if="${currentPage > 0}">
+            <a th:href="@{/web/tasks(page=${currentPage - 1}, title=${param.title}, category=${param.category})}">Previous</a>
+        </li>
+        <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}">
+            <a th:classappend="${page == currentPage} ? 'active'"
+               th:href="@{/web/tasks(page=${page}, title=${param.title}, category=${param.category})}"
+               th:text="${page + 1}"></a>
+        </li>
+        <li th:if="${currentPage < totalPages - 1}">
+            <a th:href="@{/web/tasks(page=${currentPage + 1}, title=${param.title}, category=${param.category})}">Next</a>
+        </li>
+    </ul>
+
+    <!-- Добавить задачу -->
+    <h2>Add New Task</h2>
+    <form method="post" th:action="@{/web/tasks/add}">
+        <input type="text" name="title" placeholder="Title" required>
+        <input type="text" name="description" placeholder="Description" required>
+        <input type="date" name="dueDate" required>
+        <select name="categoryId">
+            <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"></option>
+        </select>
+        <button type="submit" class="btn btn-add">Add Task</button>
+    </form>
+</div>
+</body>
+</html>

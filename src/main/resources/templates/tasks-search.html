@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Search Tasks</title>
+</head>
+<body>
+<h1>Search Results</h1>
+
+<form action="/tasks/search" method="get">
+    <input type="text" name="title" th:value="${title}" placeholder="Search by title">
+    <button type="submit">Search</button>
+</form>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Category</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="task : ${tasks}">
+        <td th:text="${task.id}"></td>
+        <td th:text="${task.title}"></td>
+        <td th:text="${task.category.name}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<div>
+    <ul>
+        <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+            <a th:href="@{|/tasks/search?title=${title}&page=${i}|}" th:text="${i + 1}"></a>
+        </li>
+    </ul>
+</div>
+</body>
+</html>
