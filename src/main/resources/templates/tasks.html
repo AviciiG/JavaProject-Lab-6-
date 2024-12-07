@@ -1,124 +1,165 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Task Management</title>
+    <title>Task Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #f8f9fa;
+            padding: 30px;
         }
 
         .container {
-            max-width: 960px;
-            margin: 30px auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            border-radius: 15px;
+            padding: 20px 30px;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         h1 {
-            text-align: center;
-            color: #333;
+            font-weight: 700;
+            font-size: 2rem;
+            color: #4e5de1;
+            margin-bottom: 20px;
         }
 
-        table {
+        .task-form input, .task-form select {
+            border: none;
+            border-bottom: 2px solid #e0e0e0;
+            border-radius: 0;
+            background: transparent;
+            padding: 10px 0;
+            outline: none;
             width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
+            font-size: 1rem;
         }
 
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+        .task-form input:focus, .task-form select:focus {
+            border-bottom: 2px solid #4e5de1;
+            box-shadow: none;
         }
 
-        table th {
-            background-color: #007bff;
-            color: white;
+        .btn-primary {
+            background-color: #4e5de1;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
         }
 
-        .btn {
-            display: inline-block;
-            padding: 8px 12px;
-            margin: 5px;
-            text-decoration: none;
-            color: white;
-            border-radius: 4px;
-            text-align: center;
-        }
-
-        .btn-add {
-            background-color: #28a745;
-        }
-
-        .btn-add:hover {
-            background-color: #218838;
+        .btn-primary:hover {
+            background-color: #3d4cb3;
         }
 
         .btn-danger {
-            background-color: #dc3545;
+            background: none;
+            border: none;
+            color: #e63946;
+            font-size: 1.2rem;
         }
 
         .btn-danger:hover {
-            background-color: #c82333;
+            color: #b71c1c;
+        }
+
+        .task-table th {
+            background-color: #4e5de1;
+            color: white;
+            border: none;
+        }
+
+        .task-table td {
+            vertical-align: middle;
         }
 
         .pagination {
-            display: flex;
+            margin-top: 20px;
             justify-content: center;
-            list-style: none;
-            padding: 0;
         }
 
-        .pagination li {
-            margin: 0 5px;
+        .img-thumbnail {
+            max-width: 70px;
+            max-height: 70px;
+            border-radius: 10px;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .pagination a {
-            text-decoration: none;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            color: #007bff;
-            border-radius: 4px;
-        }
-
-        .pagination a.active {
-            background-color: #007bff;
+        .logout-btn {
+            position: absolute;
+            top: 10px;
+            right: 30px;
+            background: #e63946;
             color: white;
-            pointer-events: none;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
         }
 
-        .filter-form input, .filter-form select {
-            margin-right: 10px;
+        .logout-btn:hover {
+            background: #b71c1c;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Task Management</h1>
+    <h1>Task Manager</h1>
+    <form th:action="@{/web/auth/login}" method="get" class="position-absolute" style="top: 10px; right: 30px;">
+        <button type="submit" class="logout-btn">Logout</button>
+    </form>
 
     <!-- Фильтры -->
-    <form class="filter-form" method="get" th:action="@{/web/tasks}">
-        <input type="text" name="title" placeholder="Search by title" th:value="${param.title}">
-        <select name="category">
-            <option value="">All Categories</option>
-            <option th:each="category : ${categories}" th:value="${category.name}" th:text="${category.name}"></option>
-        </select>
-        <button type="submit" class="btn">Filter</button>
+    <form class="task-form row g-3 mb-4" th:action="@{/web/tasks}" method="get">
+        <div class="col-md-4">
+            <input type="text" name="title" placeholder="Filter by Title">
+        </div>
+        <div class="col-md-4">
+            <select name="category">
+                <option value="">All Categories</option>
+                <option th:each="cat : ${categories}" th:value="${cat.name}" th:text="${cat.name}"></option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </form>
+
+    <!-- Добавление задачи -->
+    <form class="task-form row g-3 mb-4" th:action="@{/web/tasks/add}" method="post">
+        <div class="col-md-3">
+            <input type="text" name="title" placeholder="Task Title" required>
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="description" placeholder="Description" required>
+        </div>
+        <div class="col-md-3">
+            <input type="date" name="dueDate" required>
+        </div>
+        <div class="col-md-3">
+            <select name="categoryId">
+                <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">Add Task</button>
+        </div>
     </form>
 
     <!-- Таблица задач -->
-    <table>
+    <table class="table table-borderless task-table">
         <thead>
         <tr>
             <th>Title</th>
             <th>Description</th>
             <th>Due Date</th>
             <th>Category</th>
+            <th>Image</th>
             <th>Actions</th>
         </tr>
         </thead>
@@ -129,8 +170,15 @@
             <td th:text="${task.dueDate}"></td>
             <td th:text="${task.category.name}"></td>
             <td>
-                <form th:action="@{/web/tasks/delete/{id}(id=${task.id})}" method="post">
-                    <button type="submit" class="btn btn-danger">Delete</button>
+                <img th:if="${task.imageName}" th:src="@{/images/{imageName}(imageName=${task.imageName})}" class="img-thumbnail">
+                <form th:action="@{/web/tasks/{id}/upload-image(id=${task.id})}" method="post" enctype="multipart/form-data">
+                    <input type="file" name="image" required>
+                    <button type="submit" class="btn-icon mt-2"><i class="fas fa-upload"></i></button>
+                </form>
+            </td>
+            <td>
+                <form th:action="@{/web/tasks/delete/{id}(id=${task.id})}" method="post" style="display:inline;">
+                    <button type="submit" class="btn-danger"><i class="fas fa-trash"></i></button>
                 </form>
             </td>
         </tr>
@@ -138,31 +186,20 @@
     </table>
 
     <!-- Пагинация -->
-    <ul class="pagination">
-        <li th:if="${currentPage > 0}">
-            <a th:href="@{/web/tasks(page=${currentPage - 1}, title=${param.title}, category=${param.category})}">Previous</a>
-        </li>
-        <li th:each="page : ${#numbers.sequence(0, totalPages - 1)}">
-            <a th:classappend="${page == currentPage} ? 'active'"
-               th:href="@{/web/tasks(page=${page}, title=${param.title}, category=${param.category})}"
-               th:text="${page + 1}"></a>
-        </li>
-        <li th:if="${currentPage < totalPages - 1}">
-            <a th:href="@{/web/tasks(page=${currentPage + 1}, title=${param.title}, category=${param.category})}">Next</a>
-        </li>
-    </ul>
-
-    <!-- Добавить задачу -->
-    <h2>Add New Task</h2>
-    <form method="post" th:action="@{/web/tasks/add}">
-        <input type="text" name="title" placeholder="Title" required>
-        <input type="text" name="description" placeholder="Description" required>
-        <input type="date" name="dueDate" required>
-        <select name="categoryId">
-            <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}"></option>
-        </select>
-        <button type="submit" class="btn btn-add">Add Task</button>
-    </form>
+    <nav>
+        <ul class="pagination">
+            <li class="page-item" th:classappend="${pageNumber == 0} ? 'disabled'">
+                <a class="page-link" th:href="@{/web/tasks(page=${pageNumber - 1})}">&laquo;</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${pageNumber == i} ? 'active'">
+                <a class="page-link" th:href="@{/web/tasks(page=${i})}" th:text="${i + 1}"></a>
+            </li>
+            <li class="page-item" th:classappend="${pageNumber == totalPages - 1} ? 'disabled'">
+                <a class="page-link" th:href="@{/web/tasks(page=${pageNumber + 1})}">&raquo;</a>
+            </li>
+        </ul>
+    </nav>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,11 +1,9 @@
 package com.example.laboratory6;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/web/auth")
@@ -19,20 +17,21 @@ public class AuthThymeleafController {
 
     @GetMapping("/register")
     public String showRegistrationForm() {
-        return "register";
+        return "register"; // Убедитесь, что register.html существует
     }
 
     @PostMapping("/register")
     public String registerUser(@RequestParam String username,
                                @RequestParam String password,
                                @RequestParam String name,
+                               @RequestParam String email,
                                Model model) {
         try {
-            authService.registerUser(username, password, name);
-            return "redirect:/web/auth/login";
+            authService.registerUser(username, password, name, email);
+            return "redirect:/web/auth/login"; // После успешной регистрации перенаправляем на логин
         } catch (Exception e) {
             model.addAttribute("error", "Ошибка регистрации: " + e.getMessage());
-            return "register";
+            return "register"; // Возврат на форму регистрации с сообщением об ошибке
         }
     }
 
@@ -44,12 +43,22 @@ public class AuthThymeleafController {
     @PostMapping("/login")
     public String login(@RequestParam String username,
                         @RequestParam String password,
+                        HttpSession session,
                         Model model) {
         if (authService.validateUser(username, password)) {
-            return "redirect:/web/tasks";
+            session.setAttribute("username", username); // Сохраняем пользователя в сессии
+            return "redirect:/web/tasks"; // Перенаправляем на задачи
         } else {
-            model.addAttribute("error", "Неверное имя пользователя или пароль");
-            return "login";
+            model.addAttribute("error", "Invalid username or password");
+            return "login"; // Возврат на страницу входа
         }
+    }
+
+
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate(); // Завершаем сессию
+        return "redirect:/web/auth/login"; // Перенаправляем на логин
     }
 }

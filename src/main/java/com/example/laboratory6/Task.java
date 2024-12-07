@@ -1,10 +1,11 @@
 package com.example.laboratory6;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
+
 @Entity
 public class Task {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -14,10 +15,11 @@ public class Task {
     private LocalDate dueDate;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
     private Category category;
 
-    // Геттеры и сеттеры
+    private String imageName;
+
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -56,5 +58,13 @@ public class Task {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
     }
 }

@@ -28,4 +28,12 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     Page<Task> findByCategory_Name(String categoryName, Pageable pageable);
 
     Page<Task> findAll(Pageable pageable);
+
+    Page<Task> findByTitleContainingAndCategoryNameContaining(String title, String category, Pageable pageable);
+
+    Page<Task> findByCategoryNameContaining(String category, Pageable pageable);
+
+    List<Task> findByTitleContainingAndCategoryName(String title, String categoryName);
+    Page<Task> findByTitleContainingAndCategoryName(String title, String categoryName, Pageable pageable);
+
 }

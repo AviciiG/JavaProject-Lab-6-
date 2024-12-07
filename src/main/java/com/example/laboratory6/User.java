@@ -21,6 +21,9 @@ public class User {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false, unique = true)
+    private String email;
+
     @Column(nullable = false)
     private String role = "ROLE_USER"; // Роль по умолчанию
 
@@ -62,5 +65,13 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

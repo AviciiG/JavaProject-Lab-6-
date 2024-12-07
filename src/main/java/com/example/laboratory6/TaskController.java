@@ -2,13 +2,16 @@ package com.example.laboratory6;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+
 @RestController
-@RequestMapping("/api/tasks")
+@RequestMapping("/api/v1/tasks")
 public class TaskController {
+
     private final TaskService taskService;
 
     public TaskController(TaskService taskService) {
@@ -20,21 +23,26 @@ public class TaskController {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String category,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Task> tasks = taskService.getAllTasks(title, category, pageable);
-        return ResponseEntity.ok(tasks);
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(taskService.getAllTasks(title, category, PageRequest.of(page, size)));
     }
 
-    @PostMapping
-    public ResponseEntity<Task> addTask(@RequestBody TaskDto taskDto) {
-        Task task = taskService.addTask(
-                taskDto.getTitle(),
-                taskDto.getDescription(),
-                taskDto.getDueDate(),
-                taskDto.getCategoryId()
-        );
-        return ResponseEntity.ok(task);
+    @PostMapping("/add")
+    public ResponseEntity<?> addTask(@RequestBody TaskDto taskDto) {
+        try {
+            // Convert dueDate from String to LocalDate
+            LocalDate dueDate = LocalDate.parse(taskDto.getDueDate());
+            Task task = taskService.addTask(
+                    taskDto.getTitle(),
+                    taskDto.getDescription(),
+                    dueDate,
+                    taskDto.getCategoryId()
+            );
+            return ResponseEntity.ok(task);
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest().body("Invalid date format. Please use YYYY-MM-DD.");
+        }
     }
 
     @DeleteMapping("/{id}")

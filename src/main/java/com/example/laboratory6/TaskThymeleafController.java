@@ -1,21 +1,25 @@
 package com.example.laboratory6;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/web/tasks")
 public class TaskThymeleafController {
-    private final TaskService taskService;
-    private final CategoryRepository categoryRepository;
 
-    public TaskThymeleafController(TaskService taskService, CategoryRepository categoryRepository) {
+    private final TaskService taskService;
+
+    public TaskThymeleafController(TaskService taskService) {
         this.taskService = taskService;
-        this.categoryRepository = categoryRepository;
     }
 
     @GetMapping
@@ -23,32 +27,40 @@ public class TaskThymeleafController {
                             @RequestParam(required = false) String category,
                             @RequestParam(defaultValue = "0") int page,
                             @RequestParam(defaultValue = "10") int size,
-                            Model model) {
-        // Параметры пагинации
-        Pageable pageable = PageRequest.of(page, size);
+                            Model model,
+                            HttpSession session) {
+        String username = (String) session.getAttribute("username");
+        if (username == null || username.isEmpty()) {
+            return "redirect:/web/auth/login";
+        }
 
-        // Получение задач с учетом фильтрации и пагинации
+        Pageable pageable = PageRequest.of(page, size);
         Page<Task> taskPage = taskService.getAllTasks(title, category, pageable);
 
-        // Добавление данных в модель
+        model.addAttribute("username", username);
         model.addAttribute("tasks", taskPage.getContent());
-        model.addAttribute("currentPage", page);
+        model.addAttribute("categories", taskService.getAllCategories());
+        model.addAttribute("pageNumber", page);
         model.addAttribute("totalPages", taskPage.getTotalPages());
-        model.addAttribute("categories", categoryRepository.findAll());
-        model.addAttribute("param", new FilterParams(title, category));
-        model.addAttribute("newTask", new TaskDto());
-
         return "tasks";
     }
 
+    @PostMapping("/{id}/upload-image")
+    public String uploadImage(@PathVariable Long id, @RequestParam("image") MultipartFile image) {
+        try {
+            taskService.uploadTaskImage(id, image.getBytes(), image.getOriginalFilename());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "redirect:/web/tasks";
+    }
+
     @PostMapping("/add")
-    public String addTask(@ModelAttribute TaskDto taskDto) {
-        taskService.addTask(
-                taskDto.getTitle(),
-                taskDto.getDescription(),
-                taskDto.getDueDate(),
-                taskDto.getCategoryId()
-        );
+    public String addTask(@RequestParam String title,
+                          @RequestParam String description,
+                          @RequestParam String dueDate,
+                          @RequestParam Long categoryId) {
+        taskService.addTask(title, description, LocalDate.parse(dueDate), categoryId);
         return "redirect:/web/tasks";
     }
 
@@ -56,31 +68,5 @@ public class TaskThymeleafController {
     public String deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
         return "redirect:/web/tasks";
-    }
-
-    public static class FilterParams {
-        private String title;
-        private String category;
-
-        public FilterParams(String title, String category) {
-            this.title = title;
-            this.category = category;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public String getCategory() {
-            return category;
-        }
-
-        public void setCategory(String category) {
-            this.category = category;
-        }
     }
 }

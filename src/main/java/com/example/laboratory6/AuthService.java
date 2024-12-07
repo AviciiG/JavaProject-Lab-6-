@@ -1,51 +1,51 @@
 package com.example.laboratory6;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
-
 @Service
 public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final String jwtSecret = "mySecretKey"; // Замените на свою секретную строку
-    private final long jwtExpirationMs = 3600000; // 1 час
+    private final MailService mailService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, MailService mailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.mailService = mailService;
     }
 
-    public void registerUser(String username, String password, String name) {
+    public void registerUser(String username, String password, String name, String email) {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("Пользователь с таким именем уже существует");
         }
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("Пользователь с таким email уже существует");
+        }
+
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setName(name);
+        user.setEmail(email);
         userRepository.save(user);
+
+        mailService.sendRegistrationConfirmation(email);
     }
 
     public boolean validateUser(String username, String password) {
         return userRepository.findByUsername(username)
-                .map(user -> passwordEncoder.matches(password, user.getPassword()))
-                .orElse(false);
+                .map(user -> {
+                    System.out.println("Validating user: " + username);
+                    System.out.println("Encoded password from DB: " + user.getPassword());
+                    boolean matches = passwordEncoder.matches(password, user.getPassword());
+                    System.out.println("Password matches: " + matches);
+                    return matches;
+                })
+                .orElseGet(() -> {
+                    System.out.println("User not found: " + username);
+                    return false;
+                });
     }
 
-    public String generateJwtToken(String username, String password) {
-        if (validateUser(username, password)) {
-            return Jwts.builder()
-                    .setSubject(username)
-                    .setIssuedAt(new Date())
-                    .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                    .signWith(SignatureAlgorithm.HS256, jwtSecret)
-                    .compact();
-        }
-        return null;
-    }
 }
