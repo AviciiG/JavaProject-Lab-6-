@@ -4,6 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthApiController {
@@ -43,4 +45,8 @@ public class AuthApiController {
         String token = "JWT_TOKEN"; // Генерация токена (замените на логику JWT)
         return ResponseEntity.ok(token);
     }
+
+
+
+
 }

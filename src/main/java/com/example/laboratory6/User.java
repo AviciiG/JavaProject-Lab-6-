@@ -23,6 +23,17 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String email;
+    @Column
+    private String resetCode;
+
+    public String getResetCode() {
+        return resetCode;
+    }
+
+    public void setResetCode(String resetCode) {
+        this.resetCode = resetCode;
+    }
+
 
     @Column(nullable = false)
     private String role = "ROLE_USER"; // Роль по умолчанию

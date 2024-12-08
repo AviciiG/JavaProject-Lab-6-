@@ -2,6 +2,7 @@ package com.example.laboratory6;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model; // Импортируем правильный класс
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,8 @@ public class AuthController {
         this.authService = authService;
         this.mailService = mailService;
     }
+
+
 
     // Регистрация пользователя
     @PostMapping("/register")
@@ -54,5 +57,8 @@ public class AuthController {
             return "login"; // Возврат на страницу входа с ошибкой
         }
     }
+
+
+
 
 }

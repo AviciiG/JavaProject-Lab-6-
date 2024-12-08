@@ -79,6 +79,10 @@
     <div class="switch-link">
       <a th:href="@{/web/auth/register}">Don't have an account? Register</a>
     </div>
+    <div class="switch-link">
+      <a th:href="@{/web/auth/forgot-password}">Forgot Password?</a>
+    </div>
+
     <div th:if="${error}" class="error-message" th:text="${error}"></div>
   </form>
 </div>
